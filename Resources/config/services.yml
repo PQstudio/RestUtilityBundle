@@ -1,3 +1,13 @@
 parameters:
+    jms_serializer.entity_object_constructor.class: PQstudio\RestUtilityBundle\Construction\EntityObjectConstructor
+    jms_serializer.doctrine_object_constructor.class: JMS\Serializer\Construction\DoctrineObjectConstructor
 
 services:
+    jms_serializer.entity_object_constructor:
+        class: %jms_serializer.entity_object_constructor%
+
+    jms_serializer.doctrine_object_constructor:
+        class: %jms_serializer.doctrine_object_constructor.class%
+        arguments: [@doctrine, @jms_serializer.entity_object_constructor]
+    jms_serializer.object_constructor:
+            alias: jms_serializer.doctrine_object_constructor
