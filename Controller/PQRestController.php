@@ -4,10 +4,8 @@ namespace PQstudio\RestUtilityBundle\Controller;
 
 use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Component\HttpFoundation\Request;
-use OinpharmaMojLek\ApiBundle\Util\MetaResource;
-use OinpharmaMojLek\AppBundle\Exception\PQHttpException;
+use PQstudio\RestUtilityBundle\Utility\ResponseMetadata;
 use JMS\Serializer\DeserializationContext;
-use JMS\DiExtraBundle\Annotation as DI;
 use FOS\RestBundle\View\View;
 
 
@@ -15,7 +13,11 @@ class PQRestController extends FOSRestController
 {
     public $meta;
 
-    protected function deserialize($content, $class, $deserializeGroups, $validationGroups, $id = null)
+    public function __construct() {
+        $this->meta = new ResponseMetadata();
+    }
+
+    public function deserialize($content, $class, $deserializeGroups, $validationGroups, $id = null)
     {
         $format = 'json';
         $serializer = $this->get('jms_serializer');
@@ -60,7 +62,7 @@ class PQRestController extends FOSRestController
         return true;
     }
 
-    protected function showValidationErrors($errors, $className)
+    public function showValidationErrors($errors, $className)
     {
         $this->meta->setError('validation_error')
                    ->setErrorMessage('Provided data is incorrect. Model did not passed validation.')
@@ -76,54 +78,73 @@ class PQRestController extends FOSRestController
         return $this->handleView($view);
     }
 
-    protected function exist($object)
+    public function exist($object)
     {
+        $this->meta = new ResponseMetadata();
         if($object === null || empty($object)) {
-            throw new PQHttpException(
+            $this->meta->setError('not_found')
+                       ->setErrorMessage('Object not found')
+            ;
+
+            $view = $this->makeView(
                 404,
-                'not_found',
-                'Object not found'
+                ['meta' => $this->meta->build()],
+                [],
+                false
             );
+
+            return $this->handleView($view);
         }
+
+        return true;
     }
 
     protected function isA($object, $type)
     {
         if(!is_a($object, $type, true)) {
-            throw new PQHttpException(
+            $this->meta->setError('wrong_type')
+                       ->setErrorMessage('Wrong type of object')
+            ;
+
+            $view = $this->makeView(
                 422,
-                'wrong_type',
-                'Wrong type of object'
+                ['meta' => $this->meta->build()],
+                [],
+                false
             );
+
+            return $this->handleView($view);
         }
     }
 
-    //protected function permissionDenied()
-    //{
-        //throw new PQHttpException(
-            //403,
-            //'permission_denied',
-            //'Access to the resource has been forbidden'
-        //);
-    //}
+    protected function permissionDenied()
+    {
+        $this->meta->setError('permission_denied')
+                   ->setErrorMessage('Access to the resource has been forbidden')
+        ;
 
-    //protected function setOffsetAndLimit(Request $request)
-    //{
-        //$limit = $request->query->getInt('limit');
-        //$offset = $request->query->getInt('offset');
+        $view = $this->makeView(
+            403,
+            ['meta' => $this->meta->build()],
+            [],
+            false
+        );
 
-        //$this->limit = ($limit > 0 && $limit < 25) ? $limit : 10;
-        //$this->offset = $offset >= 0 ? $offset : 0;
-    //}
+        return $this->handleView($view);
+    }
+
+    protected function setOffsetAndLimit(Request $request)
+    {
+        $limit = $request->query->getInt('limit');
+        $offset = $request->query->getInt('offset');
+
+        $this->limit = ($limit > 0 && $limit <= $this->container->getParameter('pqstudio_rest_utility.limit')) ? $limit : 10;
+        $this->offset = $offset >= 0 ? $offset : $this->container->getParameter('pqstudio_rest_utility.offset');
+    }
 
     protected function makeView($code, $data, $serializationGroups, $enableMaxDepthChecks)
     {
         $view = $this->view();
-
-        $this->meta->setStatusCode($code);
-        if(isset($data['meta'])) {
-            $data['meta'] = array_merge(['code' => $code], $data['meta']);
-        }
 
         $view->setStatusCode($code)
             ->setData($data);
