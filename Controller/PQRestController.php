@@ -7,22 +7,26 @@ use Symfony\Component\HttpFoundation\Request;
 use PQstudio\RestUtilityBundle\Utility\ResponseMetadata;
 use JMS\Serializer\DeserializationContext;
 use FOS\RestBundle\View\View;
-
+use PQstudio\RestUtilityBundle\PQstudioRestUtilityBundle;
 
 class PQRestController extends FOSRestController
 {
+    /**
+     * @DI\Inject("utility.response_metadata")
+     */
     public $meta;
 
-    public function __construct() {
-        $this->meta = new ResponseMetadata();
-    }
+    /**
+     * @DI\Inject("service_container")
+     */
+    public $container;
 
     public function deserialize($content, $class, $deserializeGroups, $validationGroups, $id = null)
     {
         $format = 'json';
         $serializer = $this->get('jms_serializer');
 
-        // add id to not deserialized json request to not repeat id in request
+        // add id to not deserialized json  request to not repeat id in request
         if(null !== $id) {
             $content = "{\"id\": ".$id.",".substr($content, 1);
         }
@@ -36,7 +40,18 @@ class PQRestController extends FOSRestController
             );
 
         } catch(\Exception $e) {
-            throw new PQHttpException(400, "json_malformed", $e->getMessage());
+            $this->meta->setError('json_malformed')
+                       ->setErrorMessage($e->getMessage())
+            ;
+
+            $view = $this->makeView(
+                400,
+                ['meta' => $this->meta->build()],
+                [],
+                false
+            );
+
+            return $this->handleView($view);
         }
 
         // check if class match after deserialization
