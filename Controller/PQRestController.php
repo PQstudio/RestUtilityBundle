@@ -5,9 +5,10 @@ namespace PQstudio\RestUtilityBundle\Controller;
 use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Component\HttpFoundation\Request;
 use PQstudio\RestUtilityBundle\Utility\ResponseMetadata;
+use PQstudio\RestUtilityBundle\Exception\PQHttpException;
+use PQstudio\RestUtilityBundle\Exception\PQValidationException;
 use JMS\Serializer\DeserializationContext;
 use FOS\RestBundle\View\View;
-use PQstudio\RestUtilityBundle\PQstudioRestUtilityBundle;
 use JMS\DiExtraBundle\Annotation as DI;
 
 class PQRestController extends FOSRestController
@@ -45,9 +46,9 @@ class PQRestController extends FOSRestController
         }
 
         // check if class match after deserialization
-        $this->isa($entity, $class);
+        $this->isA($entity, $class);
 
-        $errors = $this->validate($entity, $validationgroups);
+        $errors = $this->validate($entity, $validationGroups);
 
         if(true !== $errors) {
             $this->showValidationErrors($errors, strtolower(get_class($entity)));
