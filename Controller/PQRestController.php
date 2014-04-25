@@ -8,6 +8,7 @@ use PQstudio\RestUtilityBundle\Utility\ResponseMetadata;
 use JMS\Serializer\DeserializationContext;
 use FOS\RestBundle\View\View;
 use PQstudio\RestUtilityBundle\PQstudioRestUtilityBundle;
+use JMS\DiExtraBundle\Annotation as DI;
 
 class PQRestController extends FOSRestController
 {
@@ -26,7 +27,7 @@ class PQRestController extends FOSRestController
         $format = 'json';
         $serializer = $this->get('jms_serializer');
 
-        // add id to not deserialized json  request to not repeat id in request
+        // add id to not deserialized json request to not repeat id in request
         if(null !== $id) {
             $content = "{\"id\": ".$id.",".substr($content, 1);
         }
@@ -40,24 +41,13 @@ class PQRestController extends FOSRestController
             );
 
         } catch(\Exception $e) {
-            $this->meta->setError('json_malformed')
-                       ->setErrorMessage($e->getMessage())
-            ;
-
-            $view = $this->makeView(
-                400,
-                ['meta' => $this->meta->build()],
-                [],
-                false
-            );
-
-            return $this->handleView($view);
+            throw new PQHttpException(400, "json_malformed", $e->getMessage());
         }
 
         // check if class match after deserialization
-        $this->isA($entity, $class);
+        $this->isa($entity, $class);
 
-        $errors = $this->validate($entity, $validationGroups);
+        $errors = $this->validate($entity, $validationgroups);
 
         if(true !== $errors) {
             $this->showValidationErrors($errors, strtolower(get_class($entity)));
@@ -79,36 +69,20 @@ class PQRestController extends FOSRestController
 
     public function showValidationErrors($errors, $className)
     {
-        $this->meta->setError('validation_error')
-                   ->setErrorMessage('Provided data is incorrect. Model did not passed validation.')
-        ;
-
-        $view = $this->makeView(
+        throw new PQValidationException(
             422,
-            ['meta' => $this->meta->build(), $className => $errors],
-            [],
-            false
+            "validation_error",
+            'Provided data is incorrect. Model did not passed validation.',
+            $className,
+            $errors
         );
-
-        return $this->handleView($view);
     }
 
     public function exist($object)
     {
         $this->meta = new ResponseMetadata();
         if($object === null || empty($object)) {
-            $this->meta->setError('not_found')
-                       ->setErrorMessage('Object not found')
-            ;
-
-            $view = $this->makeView(
-                404,
-                ['meta' => $this->meta->build()],
-                [],
-                false
-            );
-
-            return $this->handleView($view);
+            throw new PQHttpException(404, "not_found", "Object not found");
         }
 
         return true;
@@ -117,35 +91,13 @@ class PQRestController extends FOSRestController
     protected function isA($object, $type)
     {
         if(!is_a($object, $type, true)) {
-            $this->meta->setError('wrong_type')
-                       ->setErrorMessage('Wrong type of object')
-            ;
-
-            $view = $this->makeView(
-                422,
-                ['meta' => $this->meta->build()],
-                [],
-                false
-            );
-
-            return $this->handleView($view);
+            throw new PQHttpException(422, "wrong_type", "Wrong type of object");
         }
     }
 
     protected function permissionDenied()
     {
-        $this->meta->setError('permission_denied')
-                   ->setErrorMessage('Access to the resource has been forbidden')
-        ;
-
-        $view = $this->makeView(
-            403,
-            ['meta' => $this->meta->build()],
-            [],
-            false
-        );
-
-        return $this->handleView($view);
+        throw new PQHttpException(403, "permission_denied", "Access to the resource has been forbidden");
     }
 
     protected function setOffsetAndLimit(Request $request)

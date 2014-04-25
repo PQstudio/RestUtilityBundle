@@ -1,11 +1,6 @@
 <?php
 namespace PQstudio\RestUtilityBundle\Utility;
 
-use JMS\DiExtraBundle\Annotation as DI;
-
-/**
- * @DI\Service("utility.response_metadata")
- */
 class ResponseMetadata
 {
     protected $code;

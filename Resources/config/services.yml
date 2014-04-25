@@ -11,5 +11,5 @@ services:
         arguments: [@doctrine, @jms_serializer.entity_object_constructor]
     jms_serializer.object_constructor:
             alias: jms_serializer.doctrine_object_constructor
-    pqstudio_rest_controller:
-            class: PQstudio\RestUtilityBundle\Controller\PQRestController
+    utility.response_metadata:
+        class: PQstudio\RestUtilityBundle\Utility\ResponseMetadata
