@@ -1,10 +1,14 @@
 parameters:
     jms_serializer.entity_object_constructor.class: PQstudio\RestUtilityBundle\Construction\EntityObjectConstructor
     jms_serializer.doctrine_object_constructor.class: JMS\Serializer\Construction\DoctrineObjectConstructor
+    pq.rest.controller.class: PQstudio\RestUtilityBundle\Controller\PQRestController
 
 services:
+    pq.rest.controller:
+        class: %pq.rest.controller.class%
+
     jms_serializer.entity_object_constructor:
-        class: %jms_serializer.entity_object_constructor%
+        class: %jms_serializer.entity_object_constructor.class%
 
     jms_serializer.doctrine_object_constructor:
         class: %jms_serializer.doctrine_object_constructor.class%
