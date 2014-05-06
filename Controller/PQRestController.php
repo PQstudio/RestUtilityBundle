@@ -69,6 +69,7 @@ class PQRestController extends FOSRestController
             422,
             "validation_error",
             'Provided data is incorrect. Model did not passed validation.',
+            null,
             $className,
             $errors
         );

@@ -36,7 +36,7 @@ class ExceptionListener
         $response = new JsonResponse();
         $meta = new ResponseMetadata();
 
-        if ($exception instanceof PQHttpException) {
+        if ($exception instanceof PQHttpException && !($exception instanceof PQValidationException)) {
             $meta->setStatusCode($exception->getStatusCode());
             $meta->setError($exception->getError());
             $meta->setErrorMessage($exception->getErrorMessage());

@@ -2,6 +2,7 @@ parameters:
     jms_serializer.entity_object_constructor.class: PQstudio\RestUtilityBundle\Construction\EntityObjectConstructor
     jms_serializer.doctrine_object_constructor.class: JMS\Serializer\Construction\DoctrineObjectConstructor
     pq.rest.controller.class: PQstudio\RestUtilityBundle\Controller\PQRestController
+    pq.acl.class: PQstudio\RestUtilityBundle\Acl\Acl
 
 services:
     jms_serializer.entity_object_constructor:
@@ -19,3 +20,7 @@ services:
         arguments: [@jms_serializer]
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
+
+    pq.acl:
+        class: %pq.acl.class%
+        arguments: [@security.acl.provider, @security.context]

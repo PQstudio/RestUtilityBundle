@@ -7,8 +7,8 @@ use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 
 
-/**
- * @DI\Service("pq.acl")
+/*
+ * DI\Service("pq.acl")
  */
 class Acl
 {
@@ -16,8 +16,8 @@ class Acl
 
     protected $security;
 
-    /**
-     * @DI\InjectParams({
+    /*
+     * DI\InjectParams({
      *     "acl" = @DI\Inject("security.acl.provider"),
      *     "security" = @DI\Inject("security.context")
      * })
