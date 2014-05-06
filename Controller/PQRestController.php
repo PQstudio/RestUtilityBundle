@@ -9,19 +9,14 @@ use PQstudio\RestUtilityBundle\Exception\PQHttpException;
 use PQstudio\RestUtilityBundle\Exception\PQValidationException;
 use JMS\Serializer\DeserializationContext;
 use FOS\RestBundle\View\View;
-use JMS\DiExtraBundle\Annotation as DI;
 
 class PQRestController extends FOSRestController
 {
-    /**
-     * @DI\Inject("utility.response_metadata")
-     */
     public $meta;
 
-    /**
-     * @DI\Inject("service_container")
-     */
-    public $container;
+    public function __construct() {
+        $this->meta = new ResponseMetadata();
+    }
 
     public function deserialize($content, $class, $deserializeGroups, $validationGroups, $id = null)
     {

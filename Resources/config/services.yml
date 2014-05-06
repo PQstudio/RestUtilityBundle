@@ -4,9 +4,6 @@ parameters:
     pq.rest.controller.class: PQstudio\RestUtilityBundle\Controller\PQRestController
 
 services:
-    pq.rest.controller:
-        class: %pq.rest.controller.class%
-
     jms_serializer.entity_object_constructor:
         class: %jms_serializer.entity_object_constructor.class%
 
