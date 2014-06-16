@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('pqstudio_rest_utility');
+        $rootNode = $treeBuilder->root('pq_rest_utility');
 
         // Here you should define the parameters that are allowed to
         // configure your bundle. See the documentation linked above for
@@ -26,7 +26,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
             ->scalarNode('limit')->cannotBeEmpty()->defaultValue('25')->end()
-            ->scalarNode('offset')->cannotBeEmpty()->defaultValue('0')->end()
+            ->scalarNode('offset')->defaultValue('0')->end()
         ->end();
 
         return $treeBuilder;

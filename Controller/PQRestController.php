@@ -102,8 +102,8 @@ class PQRestController extends FOSRestController
         $limit = $request->query->getInt('limit');
         $offset = $request->query->getInt('offset');
 
-        $this->limit = ($limit > 0 && $limit <= $this->container->getParameter('pqstudio_rest_utility.limit')) ? $limit : 10;
-        $this->offset = $offset >= 0 ? $offset : $this->container->getParameter('pqstudio_rest_utility.offset');
+        $this->limit = ($limit > 0 && $limit <= $this->container->getParameter('pq_rest_utility')['limit']) ? $limit : 10;
+        $this->offset = $offset >= 0 ? $offset : $this->container->getParameter('pq_rest_utility')['offset'];
     }
 
     protected function makeView($code, $data, $serializationGroups, $enableMaxDepthChecks)
