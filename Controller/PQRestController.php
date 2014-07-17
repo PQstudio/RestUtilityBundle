@@ -9,6 +9,7 @@ use PQstudio\RestUtilityBundle\Exception\PQHttpException;
 use PQstudio\RestUtilityBundle\Exception\PQValidationException;
 use JMS\Serializer\DeserializationContext;
 use FOS\RestBundle\View\View;
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 
 class PQRestController extends FOSRestController
 {
@@ -61,6 +62,62 @@ class PQRestController extends FOSRestController
         }
 
         return true;
+    }
+
+    /**
+     * Function for sanitizing input for batch update
+     * Uses JMSSerializer metadata
+     */
+    public function sanitizeInput($class, $content, $groups)
+    {
+        $json = json_decode($content, true);
+
+        $serializer = $this->get('jms_serializer');
+        $metadataFactory = $serializer->getMetadataFactory();
+
+        $metadata = $metadataFactory->getMetadataForClass($class);
+
+        $sanitizedFields = [];
+
+        foreach($metadata->propertyMetadata as $property) {
+            if(!empty(array_intersect($property->groups, $groups))) {
+                $sanitizedFields[] = $property->name;
+            }
+        }
+
+        $filtered = [];
+        foreach($json as $key => $value) {
+            if(in_array($key, $sanitizedFields)) {
+                $filtered[$key] = $value;
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Returns ids of objects allowed by ACL for action
+     */
+    public function getAllowedIds($objects, $action) {
+        $oids = [];
+
+        foreach($objects as $object) {
+            $oids[] = ObjectIdentity::fromDomainObject($object);
+        }
+
+        $securityContext = $this->get('security.context');
+        $aclProvider = $this->get('security.acl.provider');
+
+        $aclProvider->findAcls($oids);
+
+        $ids = [];
+        foreach ($objects as $object) {
+            if ($securityContext->isGranted($action, $object)) {
+                $ids[] = $object->getId();
+            }
+        }
+
+        return $ids;
     }
 
     public function showValidationErrors($errors, $className)
